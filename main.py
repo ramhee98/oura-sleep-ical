@@ -11,7 +11,7 @@ def main():
         return
 
     print(f"Generating calendar with {len(sleep_data)} sleep entries...")
-    calendar = generate_sleep_calendar(sleep_data)
+    calendar = generate_sleep_calendar(sleep_data, existing_uids=set())
 
     print(f"Saving calendar to {ICAL_OUTPUT_PATH}...")
     save_calendar(calendar, ICAL_OUTPUT_PATH)

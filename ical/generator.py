@@ -7,7 +7,7 @@ def convert_to_hh_mm_ss(seconds):
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec)
     
-def generate_sleep_calendar(sleep_data: List[Dict]) -> Calendar:
+def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> Calendar:
     """
     Generates an iCalendar object from a list of sleep sessions.
     Each sleep session must include 'bedtime_start', 'bedtime_end', and optionally metadata.
@@ -19,7 +19,11 @@ def generate_sleep_calendar(sleep_data: List[Dict]) -> Calendar:
         end = datetime.fromisoformat(session["bedtime_end"])
         duration = end - start
 
+        if session["id"] in existing_uids:
+            continue  # skip already included events
+
         e = Event()
+        e.uid = session["id"]
         e.name = f"Sleep: {duration}"
         e.begin = start
         e.end = end
@@ -33,6 +37,19 @@ def generate_sleep_calendar(sleep_data: List[Dict]) -> Calendar:
 
     return cal
 
-def save_calendar(cal: Calendar, output_path: str):
-    with open(output_path, 'w') as f:
-        f.writelines(cal)
+def save_calendar(new_calendar: Calendar, path: str):
+    try:
+        with open(path, "r") as f:
+            existing_calendar = Calendar(f.read())
+    except FileNotFoundError:
+        existing_calendar = Calendar()
+
+    # Combine events without duplicates (by uid)
+    existing_uids = {e.uid for e in existing_calendar.events}
+    for event in new_calendar.events:
+        if event.uid not in existing_uids:
+            existing_calendar.events.add(event)
+
+    with open(path, "w") as f:
+        f.writelines(existing_calendar.serialize_iter())
+
