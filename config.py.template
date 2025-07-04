@@ -1,3 +1,8 @@
+# Your Oura API personal access token (requires 'sleep' and 'daily' scopes)
 OURA_TOKEN = "OURA_PERSONAL_ACCESS_TOKEN"
-ICAL_OUTPUT_PATH = "ICAL_OUTPUT_PATH/sleep.ics"
+
+# Path where the generated iCalendar (.ics) file will be saved
+ICAL_OUTPUT_PATH = "./sleep.ics"
+
+# Number of past days to fetch sleep data for
 DAYS_BACK = 7
