@@ -73,7 +73,11 @@ def save_calendar(new_calendar: Calendar, path: str):
         if event.uid not in existing_uids:
             existing_calendar.events.add(event)
 
-    with open(path, "w") as f:
-        f.writelines(existing_calendar.serialize_iter())
+    existing_calendar.serialize_iter()
+    existing_calendar = existing_calendar.serialize().replace(
+        "PRODID:ics.py - http://git.io/lLljaA", 
+        "PRODID:-//ramhee98//oura-sleep-ical//EN"
+    )
 
-#-//ramhee98//oura-sleep-ical//EN
+    with open(path, "w") as f:
+        f.writelines(existing_calendar)
