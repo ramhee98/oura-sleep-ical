@@ -1,6 +1,7 @@
 from ics import Calendar, Event
 from datetime import datetime
 from typing import List, Dict
+import textwrap
 
 def convert_to_hh_mm_ss(seconds):
     min, sec = divmod(seconds, 60)
@@ -23,13 +24,14 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> 
             continue  # skip already included events
 
         e = Event()
+        e.created = datetime.now()
         e.uid = session["id"]
         e.name = f"Sleep: {duration}"
         e.begin = start
         e.end = end
-        e.description = (
-            f"Sleep Score: {session['readiness']['score'], 'N/A'}\n"
-            f"Actual Sleep: {convert_to_hh_mm_ss(session['total_sleep_duration'])}\n"
+        e.description  = (
+            f"Score: {session['readiness']['score']} "
+            f"Sleep: {convert_to_hh_mm_ss(session['total_sleep_duration'])} "
             f"Efficiency: {session.get('efficiency', 'N/A')}"
         )
 
