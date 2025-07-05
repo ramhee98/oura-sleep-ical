@@ -3,10 +3,10 @@ from datetime import datetime
 from typing import List, Dict
 import textwrap
 
-def convert_to_hh_mm_ss(seconds):
-    min, sec = divmod(seconds, 60)
+def convert_to_hh_mm(seconds):
+    min, _ = divmod(seconds, 60)
     hour, min = divmod(min, 60)
-    return '%d:%02d:%02d' % (hour, min, sec)
+    return '%d:%02d' % (hour, min)
     
 def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> Calendar:
     """
@@ -19,6 +19,7 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> 
         start = datetime.fromisoformat(session["bedtime_start"])
         end = datetime.fromisoformat(session["bedtime_end"])
         duration = end - start
+        duration = convert_to_hh_mm(duration.total_seconds())
 
         if session["id"] in existing_uids:
             continue  # skip already included events
@@ -26,7 +27,7 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> 
         e = Event()
         e.created = datetime.now()
         e.uid = session["id"]
-        e.name = f"Sleep: {duration}"
+        e.name = f"Tib: {duration}"
         e.begin = start
         e.end = end
 
@@ -37,7 +38,8 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> 
             print(f"Error parsing date for session {session['id']}")
 
         try:
-            total_sleep_duration = convert_to_hh_mm_ss(session['total_sleep_duration'])
+            total_sleep_duration = convert_to_hh_mm(session['total_sleep_duration'])
+            e.name = f"Sleep: {total_sleep_duration}"
         except:
             total_sleep_duration = 'N/A'
             print(f"Error parsing date for session {session['id']}")
@@ -50,7 +52,7 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> 
 
         e.description  = (
             f"Score: {score} "
-            f"Sleep: {total_sleep_duration} "
+            f"Time in Bed: {duration} "
             f"Efficiency: {efficiency}"
         )
 
@@ -74,3 +76,4 @@ def save_calendar(new_calendar: Calendar, path: str):
     with open(path, "w") as f:
         f.writelines(existing_calendar.serialize_iter())
 
+#-//ramhee98//oura-sleep-ical//EN
