@@ -29,10 +29,29 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> 
         e.name = f"Sleep: {duration}"
         e.begin = start
         e.end = end
+
+        try:
+            score = session['readiness']['score']
+        except:
+            score = 'N/A'
+            print(f"Error parsing date for session {session['id']}")
+
+        try:
+            total_sleep_duration = convert_to_hh_mm_ss(session['total_sleep_duration'])
+        except:
+            total_sleep_duration = 'N/A'
+            print(f"Error parsing date for session {session['id']}")
+
+        try:
+            efficiency = session.get('efficiency', 'N/A')
+        except:
+            efficiency = 'N/A'
+            print(f"Error parsing date for session {session['id']}")
+
         e.description  = (
-            f"Score: {session['readiness']['score']} "
-            f"Sleep: {convert_to_hh_mm_ss(session['total_sleep_duration'])} "
-            f"Efficiency: {session.get('efficiency', 'N/A')}"
+            f"Score: {score} "
+            f"Sleep: {total_sleep_duration} "
+            f"Efficiency: {efficiency}"
         )
 
         cal.events.add(e)
