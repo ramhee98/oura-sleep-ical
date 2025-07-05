@@ -6,3 +6,7 @@ ICAL_OUTPUT_PATH = "./sleep.ics"
 
 # Number of past days to fetch sleep data for
 DAYS_BACK = 7
+
+# Minimum duration (in minutes) for a sleep event to be included in the calendar.
+# Sleep events shorter than this threshold will be ignored.
+MIN_SLEEP_DURATION_MINUTES = 60

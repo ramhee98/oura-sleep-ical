@@ -1,14 +1,13 @@
 from ics import Calendar, Event
 from datetime import datetime
 from typing import List, Dict
-import textwrap
 
 def convert_to_hh_mm(seconds):
     min, _ = divmod(seconds, 60)
     hour, min = divmod(min, 60)
     return '%d:%02d' % (hour, min)
     
-def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> Calendar:
+def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str], min_sleep_duration_minutes) -> Calendar:
     """
     Generates an iCalendar object from a list of sleep sessions.
     Each sleep session must include 'bedtime_start', 'bedtime_end', and optionally metadata.
@@ -19,6 +18,11 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str]) -> 
         start = datetime.fromisoformat(session["bedtime_start"])
         end = datetime.fromisoformat(session["bedtime_end"])
         duration = end - start
+
+        if duration.seconds / 60 < min_sleep_duration_minutes:
+            print(f"Skipping session {session['id']} with duration {duration} (less than {min_sleep_duration_minutes} minutes)")
+            continue
+
         duration = convert_to_hh_mm(duration.total_seconds())
 
         if session["id"] in existing_uids:

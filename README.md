@@ -7,6 +7,7 @@ Generate a sleep calendar from your Oura Ring data as an `.ics` file you can imp
 - Fetches sleep data from the Oura API
 - Converts sessions into iCalendar format (`.ics`)
 - Includes sleep score, time in bed duration, and efficiency in event descriptions
+- Skips sleep events shorter than 60 minutes (configurable)
 
 ## Requirements
 
