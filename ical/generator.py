@@ -91,13 +91,13 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str], min
             f"Score: {score}\n"
             f"Time in Bed: {duration_str}\n"
             f"Total Sleep: {total_sleep}\n"
-            f"Efficiency: {efficiency}\n"
+            f"Efficiency: {efficiency}%\n"
             f"Latency: {latency}\n"
             f"Awake Time: {awake_time}\n"
             f"REM Sleep: {rem_sleep} ({rem_pct}%)\n"
             f"Light Sleep: {light_sleep} ({light_pct}%)\n"
             f"Deep Sleep: {deep_sleep} ({deep_pct}%)\n"
-            f"Resting HR: {resting_hr}"
+            f"Resting HR: {resting_hr} bpm"
         )
 
         event.add('summary', summary)
