@@ -38,17 +38,52 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str], min
 
 
         try:
-            duration_str = convert_to_hh_mm((end - start).total_seconds())
-            total_sleep = convert_to_hh_mm(session.get("total_sleep_duration", 0))
+            # Duration from bedtime start to end
+            duration_seconds = (end - start).total_seconds()
+            duration_str = convert_to_hh_mm(duration_seconds)
+
+            # Total sleep duration
+            total_sleep_seconds = session.get("total_sleep_duration", 0)
+            total_sleep = convert_to_hh_mm(total_sleep_seconds)
+
+            # Sleep phases
+            rem_sleep = convert_to_hh_mm(session.get("rem_sleep_duration", 0))
+            light_sleep = convert_to_hh_mm(session.get("light_sleep_duration", 0))
+            deep_sleep = convert_to_hh_mm(session.get("deep_sleep_duration", 0))
+
+            # Awake time
+            awake_time = convert_to_hh_mm(session.get("awake_time", 0))
+
+            # Sleep efficiency (as % or value)
             efficiency = session.get("efficiency", "N/A")
+
+            # Latency (time to fall asleep)
+            latency = convert_to_hh_mm(session.get("latency", 0))
+
+            # Resting heart rate
+            resting_hr = session.get("lowest_heart_rate", "N/A")
+
+            # Readiness score
             score = session.get("readiness", {}).get("score", "N/A")
+
         except Exception as e:
-            print(f"Error parsing session data: {e}")
+            print(f"Error parsing session data for UID {uid}: {e}")
             continue
 
         # Multiline fields
         summary = f"Sleep: {total_sleep}\nTib: {duration_str}"
-        description = f"Score: {score}\nTime in Bed: {duration_str}\nEfficiency: {efficiency}"
+        description = (
+            f"Score: {score}\n"
+            f"Time in Bed: {duration_str}\n"
+            f"Total Sleep: {total_sleep}\n"
+            f"Efficiency: {efficiency}\n"
+            f"Latency: {latency}\n"
+            f"Awake Time: {awake_time}\n"
+            f"REM Sleep: {rem_sleep}\n"
+            f"Light Sleep: {light_sleep}\n"
+            f"Deep Sleep: {deep_sleep}\n"
+            f"Resting HR: {resting_hr}"
+        )
 
         event.add('summary', summary)
         event.add('description', description)
