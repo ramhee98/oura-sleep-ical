@@ -1,87 +1,62 @@
-from ics import Calendar, Event
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict
+from icalendar import Calendar, Event
+from uuid import uuid4
 
 def convert_to_hh_mm(seconds):
     min, _ = divmod(seconds, 60)
     hour, min = divmod(min, 60)
     return '%d:%02d' % (hour, min)
-    
+
 def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str], min_sleep_duration_minutes) -> Calendar:
-    """
-    Generates an iCalendar object from a list of sleep sessions.
-    Each sleep session must include 'bedtime_start', 'bedtime_end', and optionally metadata.
-    """
     cal = Calendar()
+    cal.add('prodid', '-//ramhee98//oura-sleep-ical//EN')
+    cal.add('version', '2.0')
 
     for session in sleep_data:
-        start = datetime.fromisoformat(session["bedtime_start"])
-        end = datetime.fromisoformat(session["bedtime_end"])
-        duration = end - start
-
-        if duration.seconds / 60 < min_sleep_duration_minutes:
-            print(f"Skipping session {session['id']} with duration {duration} (less than {min_sleep_duration_minutes} minutes)")
+        try:
+            start = datetime.fromisoformat(session["bedtime_start"])
+            end = datetime.fromisoformat(session["bedtime_end"])
+        except Exception as e:
+            print(f"Skipping due to invalid time: {e}")
             continue
 
-        duration = convert_to_hh_mm(duration.total_seconds())
+        duration_minutes = (end - start).total_seconds() / 60
+        if duration_minutes < min_sleep_duration_minutes:
+            continue
 
-        if session["id"] in existing_uids:
-            continue  # skip already included events
+        uid = session.get("id") or str(uuid4())
+        if uid in existing_uids:
+            continue
 
-        e = Event()
-        e.created = datetime.now()
-        e.uid = session["id"]
-        e.name = f"Tib: {duration}"
-        e.begin = start
-        e.end = end
+        event = Event()
+        event.add('uid', uid)
+        event.add('dtstart', start)
+        event.add('dtend', end)
+        event.add('dtstamp', datetime.now(timezone.utc))
+        event.add('created', datetime.now(timezone.utc))
 
-        try:
-            score = session['readiness']['score']
-        except:
-            score = 'N/A'
-            print(f"Error parsing date for session {session['id']}")
 
         try:
-            total_sleep_duration = convert_to_hh_mm(session['total_sleep_duration'])
-            e.name = f"Sleep: {total_sleep_duration}"
-        except:
-            total_sleep_duration = 'N/A'
-            print(f"Error parsing date for session {session['id']}")
+            duration_str = convert_to_hh_mm((end - start).total_seconds())
+            total_sleep = convert_to_hh_mm(session.get("total_sleep_duration", 0))
+            efficiency = session.get("efficiency", "N/A")
+            score = session.get("readiness", {}).get("score", "N/A")
+        except Exception as e:
+            print(f"Error parsing session data: {e}")
+            continue
 
-        try:
-            efficiency = session.get('efficiency', 'N/A')
-        except:
-            efficiency = 'N/A'
-            print(f"Error parsing date for session {session['id']}")
+        # Multiline fields
+        summary = f"Sleep: {total_sleep}\nTib: {duration_str}"
+        description = f"Score: {score}\nTime in Bed: {duration_str}\nEfficiency: {efficiency}"
 
-        e.description  = (
-            f"Score: {score} "
-            f"Time in Bed: {duration} "
-            f"Efficiency: {efficiency}"
-        )
+        event.add('summary', summary)
+        event.add('description', description)
 
-        cal.events.add(e)
+        cal.add_component(event)
 
     return cal
 
-def save_calendar(new_calendar: Calendar, path: str):
-    try:
-        with open(path, "r") as f:
-            existing_calendar = Calendar(f.read())
-    except FileNotFoundError:
-        existing_calendar = Calendar()
-
-    # Combine events without duplicates (by uid)
-    existing_uids = {e.uid for e in existing_calendar.events}
-    for event in new_calendar.events:
-        if event.uid not in existing_uids:
-            existing_calendar.events.add(event)
-
-    existing_calendar.serialize_iter()
-    existing_calendar = existing_calendar.serialize().replace(
-        "PRODID:ics.py - http://git.io/lLljaA", 
-        "PRODID:-//ramhee98//oura-sleep-ical//EN"
-    )
-
-    with open(path, "w") as f:
-        f.writelines(existing_calendar)
+def save_calendar(calendar: Calendar, path: str):
+    with open(path, 'wb') as f:
+        f.write(calendar.to_ical())
