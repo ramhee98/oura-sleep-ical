@@ -88,7 +88,7 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_uids: set[str], min
         # Multiline fields
         summary = f"Sleep: {total_sleep}\nTib: {duration_str}"
         description = (
-            f"Score: {score}\n"
+            f"Readiness Score: {score}\n"
             f"Time in Bed: {duration_str}\n"
             f"Total Sleep: {total_sleep}\n"
             f"Efficiency: {efficiency}%\n"
