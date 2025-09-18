@@ -6,6 +6,8 @@ Generate a sleep calendar from your Oura Ring data as an `.ics` file you can imp
 
 - Fetches sleep data from the Oura API
 - Converts sessions into iCalendar format (`.ics`)
+- Preserves existing data: Automatically merges new data with existing calendar entries, preventing data loss
+- Duplicate prevention: Skips events that already exist in your calendar based on unique IDs
 - Includes:
   - Sleep score
   - Time in bed (TIB) and total sleep duration
@@ -56,7 +58,13 @@ Generate a sleep calendar from your Oura Ring data as an `.ics` file you can imp
 python3 main.py
 ```
 
-This will output a file like `sleep.ics` in the project directory.
+This will:
+1. Load any existing calendar data from your `sleep.ics` file
+2. Fetch new sleep data from the Oura API for the specified number of days
+3. Merge the new data with existing events (avoiding duplicates)
+4. Save the updated calendar to `sleep.ics`
+
+**Note**: The script automatically preserves your existing sleep data, so you can run it regularly to update your calendar with new entries without losing historical data.
 
 ## Example Calendar Output
 
