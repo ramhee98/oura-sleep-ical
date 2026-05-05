@@ -91,8 +91,17 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar,
             # Awake time
             awake_time = convert_to_hh_mm(session.get("awake_time", 0))
 
-            # Sleep efficiency (as % or value)
-            efficiency = session.get("efficiency", "N/A")
+            # Sleep efficiency. Oura v2 returns this as an integer percentage
+            # (e.g. 87), but historical responses sometimes used a 0..1 fraction.
+            # Normalise both so the description never shows things like "0.87%"
+            # or "N/A%".
+            raw_efficiency = session.get("efficiency")
+            if raw_efficiency is None:
+                efficiency_str = "N/A"
+            elif isinstance(raw_efficiency, (int, float)) and raw_efficiency <= 1:
+                efficiency_str = f"{round(raw_efficiency * 100)}%"
+            else:
+                efficiency_str = f"{raw_efficiency}%"
 
             # Latency (time to fall asleep)
             latency = convert_to_hh_mm(session.get("latency", 0))
@@ -124,7 +133,7 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar,
         description = (
             f"Time in Bed: {duration_str}\n"
             f"Total Sleep: {total_sleep}\n"
-            f"Efficiency: {efficiency}%\n"
+            f"Efficiency: {efficiency_str}\n"
             f"Latency: {latency}\n"
             f"Awake Time: {awake_time}\n"
             f"REM Sleep: {rem_sleep} ({rem_pct}%)\n"
