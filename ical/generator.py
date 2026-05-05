@@ -100,9 +100,6 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar,
             # Resting heart rate
             resting_hr = session.get("lowest_heart_rate", "N/A")
 
-            # Readiness score
-            score = session.get("readiness", {}).get("score", "N/A")
-
             # Get durations in seconds
             total_sleep_seconds = session.get("total_sleep_duration", 0)
             deep_sleep_seconds = session.get("deep_sleep_duration", 0)
@@ -125,7 +122,6 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar,
         # Multiline fields
         summary = f"Sleep: {total_sleep}\nTib: {duration_str}"
         description = (
-            f"Readiness Score: {score}\n"
             f"Time in Bed: {duration_str}\n"
             f"Total Sleep: {total_sleep}\n"
             f"Efficiency: {efficiency}%\n"
