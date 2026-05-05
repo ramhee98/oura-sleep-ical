@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
-from typing import List, Dict
+from typing import List, Dict, Optional
 from icalendar import Calendar, Event
 from uuid import uuid4
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import os
 
 def convert_to_hh_mm(seconds):
@@ -43,9 +44,21 @@ def load_existing_calendar(path: str) -> tuple[Calendar, set[str]]:
         empty_cal.add('version', '2.0')
         return empty_cal, set()
 
-def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar, existing_uids: set[str], min_sleep_duration_minutes) -> Calendar:
+def _resolve_target_tz(tz_name: Optional[str]):
+    """Resolve a config-supplied IANA timezone name to a ZoneInfo, or None."""
+    if not tz_name:
+        return None
+    try:
+        return ZoneInfo(tz_name)
+    except ZoneInfoNotFoundError:
+        print(f"⚠️  Unknown TIMEZONE '{tz_name}'; keeping API-provided times.")
+        return None
+
+
+def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar, existing_uids: set[str], min_sleep_duration_minutes, tz_name: Optional[str] = None) -> Calendar:
     # Start with the existing calendar
     cal = existing_calendar
+    target_tz = _resolve_target_tz(tz_name)
 
     for session in sleep_data:
         try:
@@ -54,6 +67,17 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar,
         except Exception as e:
             print(f"Skipping due to invalid time: {e}")
             continue
+
+        # Optionally convert to a user-specified timezone so the calendar
+        # always renders in a consistent zone regardless of where the Oura
+        # device was when it recorded the session.
+        if target_tz is not None:
+            if start.tzinfo is None:
+                start = start.replace(tzinfo=timezone.utc)
+            if end.tzinfo is None:
+                end = end.replace(tzinfo=timezone.utc)
+            start = start.astimezone(target_tz)
+            end = end.astimezone(target_tz)
 
         duration_minutes = (end - start).total_seconds() / 60
         if duration_minutes < min_sleep_duration_minutes:

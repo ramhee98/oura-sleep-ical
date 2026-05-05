@@ -1,4 +1,8 @@
 from config import OURA_TOKEN, ICAL_OUTPUT_PATH, DAYS_BACK, MIN_SLEEP_DURATION_MINUTES
+try:
+    from config import TIMEZONE
+except ImportError:
+    TIMEZONE = None
 from oura_api.client import fetch_sleep_data
 from ical.generator import generate_sleep_calendar, save_calendar, load_existing_calendar
 
@@ -15,10 +19,11 @@ def main():
 
     print(f"Generating calendar with {len(sleep_data)} new sleep entries...")
     calendar = generate_sleep_calendar(
-        sleep_data, 
-        existing_calendar, 
-        existing_uids, 
-        min_sleep_duration_minutes=MIN_SLEEP_DURATION_MINUTES
+        sleep_data,
+        existing_calendar,
+        existing_uids,
+        min_sleep_duration_minutes=MIN_SLEEP_DURATION_MINUTES,
+        tz_name=TIMEZONE,
     )
 
     print(f"Saving calendar to {ICAL_OUTPUT_PATH}...")

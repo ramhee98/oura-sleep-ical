@@ -10,3 +10,8 @@ DAYS_BACK = 7
 # Minimum duration (in minutes) for a sleep event to be included in the calendar.
 # Sleep events shorter than this threshold will be ignored.
 MIN_SLEEP_DURATION_MINUTES = 60
+
+# Optional: convert all sleep event times to this IANA timezone (e.g.
+# "Europe/Zurich"). Leave as None to keep whatever timezone the Oura API
+# returned (typically the local time of the device).
+TIMEZONE = None
