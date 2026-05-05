@@ -68,8 +68,10 @@ def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar,
         event.add('uid', uid)
         event.add('dtstart', start)
         event.add('dtend', end)
-        event.add('dtstamp', datetime.now(timezone.utc))
-        event.add('created', datetime.now(timezone.utc))
+        now_utc = datetime.now(timezone.utc)
+        event.add('dtstamp', now_utc)
+        event.add('created', now_utc)
+        event.add('last-modified', now_utc)
 
 
         try:
