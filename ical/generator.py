@@ -55,12 +55,19 @@ def _resolve_target_tz(tz_name: Optional[str]):
         return None
 
 
-def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar, existing_uids: set[str], min_sleep_duration_minutes, tz_name: Optional[str] = None) -> Calendar:
+def generate_sleep_calendar(sleep_data: List[Dict], existing_calendar: Calendar, existing_uids: set[str], min_sleep_duration_minutes, tz_name: Optional[str] = None, min_sleep_score: Optional[int] = None) -> Calendar:
     # Start with the existing calendar
     cal = existing_calendar
     target_tz = _resolve_target_tz(tz_name)
 
     for session in sleep_data:
+        # Sleep score filter: drop sessions below the configured threshold.
+        # Sessions without a score (e.g. very short naps) are always kept
+        # so the duration filter remains the sole gate for them.
+        if min_sleep_score is not None:
+            score = session.get("score")
+            if isinstance(score, (int, float)) and score < min_sleep_score:
+                continue
         try:
             start = datetime.fromisoformat(session["bedtime_start"])
             end = datetime.fromisoformat(session["bedtime_end"])

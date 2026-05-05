@@ -15,3 +15,8 @@ MIN_SLEEP_DURATION_MINUTES = 60
 # "Europe/Zurich"). Leave as None to keep whatever timezone the Oura API
 # returned (typically the local time of the device).
 TIMEZONE = None
+
+# Optional: skip sleep sessions whose Oura sleep score is below this
+# threshold (0..100). Leave as None to include every session that also
+# meets MIN_SLEEP_DURATION_MINUTES.
+MIN_SLEEP_SCORE = None

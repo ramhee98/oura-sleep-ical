@@ -3,6 +3,10 @@ try:
     from config import TIMEZONE
 except ImportError:
     TIMEZONE = None
+try:
+    from config import MIN_SLEEP_SCORE
+except ImportError:
+    MIN_SLEEP_SCORE = None
 from oura_api.client import fetch_sleep_data
 from ical.generator import generate_sleep_calendar, save_calendar, load_existing_calendar
 
@@ -24,6 +28,7 @@ def main():
         existing_uids,
         min_sleep_duration_minutes=MIN_SLEEP_DURATION_MINUTES,
         tz_name=TIMEZONE,
+        min_sleep_score=MIN_SLEEP_SCORE,
     )
 
     print(f"Saving calendar to {ICAL_OUTPUT_PATH}...")
